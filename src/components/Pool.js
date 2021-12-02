@@ -11,8 +11,7 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   FormControl,
-  InputLabel,
-  Input,
+  TextField,
   InputAdornment,
 } from '@mui/material'
 
@@ -90,19 +89,28 @@ const Pool = ({ network }) => {
           </ToggleButtonGroup>
         </Box>
         <FormControl fullWidth variant="standard">
-          <InputLabel htmlFor="amount">Amount</InputLabel>
-          <Input
+          <TextField
+            error={balance < amount}
+            helperText={balance < amount ? 'Insufficient balance' : ''}
+            label="Amount"
             id="amount"
             type="number"
             value={amount}
             onChange={(e) => setAmount(parseFloat(e.target.value))}
-            endAdornment={<InputAdornment position="end">USDC</InputAdornment>}
-            readOnly={mode === 'withdraw'}
+            disabled={mode === 'withdraw'}
+            InputProps={{
+              endAdornment: <InputAdornment end="start">USDC</InputAdornment>,
+            }}
           />
         </FormControl>
       </CardContent>
       <CardActions sx={{ display: 'flex', justifyContent: 'center', pb: 4 }}>
-        <Button variant="outlined" color="success" onClick={handleConfirm}>
+        <Button
+          variant="outlined"
+          color="success"
+          onClick={handleConfirm}
+          disabled={balance < amount}
+        >
           Confirm
         </Button>
       </CardActions>
