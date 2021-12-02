@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import {
   Card,
   CardHeader,
@@ -17,30 +18,61 @@ import {
 
 import { FlexBox } from './styled'
 
-const Pool = ({ data }) => {
+import { setBalance } from '../store/reducers/user'
+import { deposit, withdraw } from '../store/reducers/pool'
+
+const Pool = ({ network }) => {
+  const { id, name, currentAPY, depositedAmount } = network
+
   const [mode, setMode] = useState('deposit')
   const [amount, setAmount] = useState(0)
 
-  const handleModeChange = (event, newMode) => setMode(newMode)
+  const { balance, interestDays } = useSelector((state) => state.user)
+
+  const dispatch = useDispatch()
+
+  const accuredInterest = () => {
+    const amount = ((depositedAmount * currentAPY) / 100 / 365) * interestDays
+    return amount.toFixed(2)
+  }
+
+  const handleModeChange = (event, newMode) => {
+    setAmount(
+      newMode === 'withdraw'
+        ? parseFloat(accuredInterest()) + depositedAmount
+        : 0,
+    )
+    setMode(newMode)
+  }
+
+  const handleConfirm = () => {
+    if (mode === 'deposit') {
+      dispatch(deposit({ id, amount }))
+      dispatch(setBalance(balance - amount))
+    } else {
+      dispatch(withdraw({ id, amount }))
+      dispatch(setBalance(balance + amount))
+    }
+    setAmount(0)
+  }
 
   return (
     <Card sx={{ minWidth: 275 }}>
-      <CardHeader
-        title={'Compound'}
-        titleTypographyProps={{ align: 'center' }}
-      />
+      <CardHeader title={name} titleTypographyProps={{ align: 'center' }} />
       <CardContent sx={{ pt: 0 }}>
         <FlexBox mb={1}>
           <Typography variant="body2">Current APY:</Typography>
-          <Typography variant="body1">{5}%</Typography>
+          <Typography variant="body1">{currentAPY} %</Typography>
         </FlexBox>
         <FlexBox mb={1}>
           <Typography variant="body2">Amount Deposited:</Typography>
-          <Typography variant="body1">{5}%</Typography>
+          <Typography variant="body1">
+            {depositedAmount.toFixed(2)} USDC
+          </Typography>
         </FlexBox>
         <FlexBox mb={1}>
           <Typography variant="body2">Accured Interest:</Typography>
-          <Typography variant="body1">{5}%</Typography>
+          <Typography variant="body1">{accuredInterest()} USDC</Typography>
         </FlexBox>
         <Box display="flex" justifyContent="center" py={2}>
           <ToggleButtonGroup
@@ -63,13 +95,14 @@ const Pool = ({ data }) => {
             id="amount"
             type="number"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            endAdornment={<InputAdornment position="end">$</InputAdornment>}
+            onChange={(e) => setAmount(parseFloat(e.target.value))}
+            endAdornment={<InputAdornment position="end">USDC</InputAdornment>}
+            readOnly={mode === 'withdraw'}
           />
         </FormControl>
       </CardContent>
       <CardActions sx={{ display: 'flex', justifyContent: 'center', pb: 4 }}>
-        <Button variant="outlined" color="success">
+        <Button variant="outlined" color="success" onClick={handleConfirm}>
           Confirm
         </Button>
       </CardActions>

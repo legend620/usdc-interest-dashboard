@@ -41,10 +41,7 @@ export const poolSlice = createSlice({
     withdraw: (state, { payload }) => {
       state.networks = state.networks.map((network) => {
         if (network.id === payload.id) {
-          return {
-            ...network,
-            depositedAmount: network.depositedAmount - payload.amount,
-          }
+          return { ...network, depositedAmount: 0 }
         }
         return network
       })

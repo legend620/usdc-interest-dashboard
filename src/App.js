@@ -1,4 +1,5 @@
-import * as React from 'react'
+import React, { useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import {
   Container,
   Typography,
@@ -12,7 +13,21 @@ import {
 import { FlexBox } from './components/styled'
 import Pool from './components/Pool'
 
+import { setInterestDays } from './store/reducers/user'
+
 export default function App() {
+  const [days, setDays] = useState(0)
+
+  const balance = useSelector((state) => state.user.balance)
+  const networks = useSelector((state) => state.pool.networks)
+
+  const dispatch = useDispatch()
+
+  const handleUpdateInterestDays = () => {
+    console.log(days)
+    dispatch(setInterestDays(days))
+  }
+
   return (
     <Container>
       <FlexBox my={4}>
@@ -21,7 +36,7 @@ export default function App() {
             <Typography variant="h5" gutterBottom>
               USDC Balance
             </Typography>
-            <Typography variant="h4">{1000}</Typography>
+            <Typography variant="h4">{balance.toFixed(2)}</Typography>
           </CardContent>
         </Card>
         <Card>
@@ -32,8 +47,15 @@ export default function App() {
                 label="Days To Progress"
                 variant="outlined"
                 type="number"
+                value={days}
+                onChange={(e) => setDays(e.target.value)}
               />
-              <Button variant="outlined" size="large" sx={{ ml: 2 }}>
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{ ml: 2 }}
+                onClick={handleUpdateInterestDays}
+              >
                 Input
               </Button>
             </FlexBox>
@@ -41,15 +63,11 @@ export default function App() {
         </Card>
       </FlexBox>
       <Grid container spacing={4} justifyContent="center">
-        <Grid item>
-          <Pool />
-        </Grid>
-        <Grid item>
-          <Pool />
-        </Grid>
-        <Grid item>
-          <Pool />
-        </Grid>
+        {networks.map((network) => (
+          <Grid item key={network.id}>
+            <Pool network={network} />
+          </Grid>
+        ))}
       </Grid>
     </Container>
   )
